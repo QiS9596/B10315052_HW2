@@ -60,3 +60,50 @@ class DES:
     ]
     PartialPermutation = [16,7,20,21,29,12,28,17,1,15,23,26,5,18,31,10,
                           2,8,24,14,32,27,3,9,19,13,30,6,22,11,4,25]
+
+    DEFUALTKEY = [1,0,1,0,1,0,1,1]
+
+    DEFAULT_BLOCK_SIZE = 64
+    def __init__(self):
+        self.key = self.DEFAULTKEY[:]
+        for i in range(0,7):
+            self.key.append(self.DEFUALTKEY)
+
+    def setKey(self,key):
+        if self.setKey(key):
+            self.key = key
+            return True
+        return False
+
+    def checkKey(self,key):
+        if len(key) != self.DEFAULT_BLOCK_SIZE:
+            return False
+        for a in range(0,64,8):
+            count = 0
+            for b in range(a,a+8):
+                if key[b] == 1:
+                    count+=1
+            if count%2 ==0:
+                return False
+        return True
+
+    def permutationBox(self, text, listbook):
+        result = [None]*listbook.__len__()
+        for a in range(0,listbook.__len__()):
+            result[a] = text[listbook[a]]
+        return result
+
+    def digitMove(self,text, left,digits):
+        result = []
+        if left:
+            for a in range(digits,text.__len__()):
+                result.append(text[a])
+            for a in range(0,digits):
+                result.append(text[a])
+        else:
+            for a in range(text.__len__()-digits, text.__len__()):
+                result.append(text[a])
+            for a in range(0, text.__len__()-digits):
+                result.append(text[a])
+
+        return result
