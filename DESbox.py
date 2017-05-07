@@ -1,22 +1,21 @@
 class DES:
     "des"
     "InitialPermutation list, used to do initial permutation before and reverse permutation to the text"
-    InitialPermutation = [58,50,42,34,26,18,10,2,60,52,44,36,28,20,12,4,62,54,46,38,30,22,14,6,64,56,48,40,32,24,16,8,
-                      57,49,41,33,25,17,9,1,59,51,43,35,27,19,11,3,61,53,45,37,29,21,13,5,63,55,47,39,31,23,15,7]
+    InitialPermutation = [57,49,41,33,25,17,9,1,59,51,43,35,27,19,11,3,61,53,45,37,29,21,13,5,63,55,47,39,31,23,15,7,56,
+                          48,40,32,24,16,8,0,58,50,42,34,26,18,10,2,60,52,44,36,28,20,12,4,62,54,46,38,30,22,14,6]
+
     "length 56, used to do permutation to the inital key"
-    KeyPermutation = [57,49,41,33,25,17,9,1,58,50,42,34,26,18,10,2,59,51,43,35,27,19,11,3,60,52,44,36,
-                      63,55,47,39,31,23,15,7,62,54,46,38,30,22,14,6,61,53,45,37,29,21,13,5,28,20,12,4]
+    KeyPermutation = [56,48,40,32,24,16,8,0,57,49,41,33,25,17,9,1,58,50,42,34,26,18,10,2,59,51,43,35,62,54,46,
+                      38,30,22,14,6,61,53,45,37,29,21,13,5,60,52,44,36,28,20,12,4,27,19,11,3]
     "length 16, do left move for both left and right part of the permuted key"
     LeftClock = [1,1,2,2,2,2,2,2,1,2,2,2,2,2,2,1]
     "48,select 48 digits form the 56 key"
-    Compression = [14,17,11,24,1,5,3,28,15,6,21,10,23,19,12,4,26,8,16,7,27,20,13,2,
-                   41,52,31,37,47,55,30,40,51,45,33,48,44,49,39,56,34,53,46,42,50,36,32]
+    Compression = [13,16,10,23,0,4,2,27,14,5,20,9,22,18,11,3,25,7,15,6,26,19,12,1,40,51,30,
+                   36,46,54,29,39,50,44,32,47,43,48,38,55,33,52,45,41,49,35,31]
 
     "expansion list to expand left/right 32digits to 48 digits"
-    Expansion = [32,1,2,3,4,5,4,5,6,7,8,9,
-                 8,9,10,11,12,13,12,13,14,15,16,17,
-                 16,17,18,19,20,21,20,21,22,23,24,25,
-                 24,25,26,27,28,29,28,29,30,31,32,1]
+    Expansion = [31,0,1,2,3,4,3,4,5,6,7,8,7,8,9,10,11,12,11,12,13,14,15,16,15,16,17,18,19,20,19,20,21,22,23,24,23,24,
+                 25,26,27,28,27,28,29,30,31,0]
     Substitution = [
         [[14,4,13,1,2,15,11,8,3,10,6,12,5,9,0,7],
          [0,15,7,4,14,2,13,1,10,6,12,11,9,5,3,8],
@@ -58,16 +57,16 @@ class DES:
          [7,11,4,1,9,12,14,2,0,6,10,13,15,3,5,8],
          [2,1,14,7,4,10,8,13,15,12,9,0,3,5,6,11]]
     ]
-    PartialPermutation = [16,7,20,21,29,12,28,17,1,15,23,26,5,18,31,10,
-                          2,8,24,14,32,27,3,9,19,13,30,6,22,11,4,25]
+    PartialPermutation = [15,6,19,20,28,11,27,16,0,14,22,25,4,17,30,9,1,7,23,13,31,26,2,8,18,12,29,5,21,10,3,2]
 
-    DEFUALTKEY = [1,0,1,0,1,0,1,1]
 
     DEFAULT_BLOCK_SIZE = 64
+
     def __init__(self):
-        self.key = self.DEFAULTKEY[:]
+        DEFUALTKEY = [1, 0, 1, 0, 1, 0, 1, 1]
+        self.key = DEFUALTKEY[:]
         for i in range(0,7):
-            self.key.append(self.DEFUALTKEY)
+            self.key.append(DEFUALTKEY)
 
     def setKey(self,key):
         if self.setKey(key):
@@ -107,3 +106,59 @@ class DES:
                 result.append(text[a])
 
         return result
+
+    def XOR(self, text1, text2):
+        if text1.__len__() != text2.__len__():
+            return
+        result = []
+        for i in range(text1.__len__()):
+            if text1[i] == text2[i]:
+                result.append(0)
+            else:
+                result.append(1)
+        return result
+
+    def SubsitutionBox(self,text):
+        if text.__len__() != 48:
+            return
+        result = []
+        for i in range(0,8):
+            result.append(self.SubsitutionBox(text[i*6,(i+1)*6]))
+        return result
+
+    def SubsitutionBox(self,text,index):
+        if text.__len__() != 6:
+            return
+        result = self.Substitution[index][text[0]*2+text[5]][text[1]*8+text[2]*4+text[3]*2+text[4]]
+        resultList = list(bin(result))
+        return resultList[2:resultList.__len__()]
+
+    def handle(self,L,R,subkey):
+        expanded = self.permutationBox(R,self.Expansion)
+        expanded = self.XOR(subkey,expanded)
+        expanded = self.SubsitutionBox(expanded)
+        expanded = self.permutationBox(expanded,self.PartialPermutation)
+        return self.XOR(L,expanded)
+
+    def encription(self, plainText):
+        if plainText.__len__() != 64:
+            return
+        plainText = self.permutationBox(plainText,self.InitialPermutation)
+        shortenedKey = self.permutationBox(self.key,self.KeyPermutation)
+        for i in range(0,16):
+            L = plainText[0:32]
+            R = plainText[32:64]
+            C = shortenedKey[0:28]
+            D = shortenedKey[28,56]
+            C = self.digitMove(C,True,self.LeftClock[i])
+            D = self.digitMove(D,True,self.LeftClock[i])
+            shortenedKey = C+D
+            subkey = self.permutationBox(shortenedKey,self.Compression)
+            print(i)
+            plainText  = R+self.handle(L,R,subkey)
+
+        return plainText
+
+text = "0110001101101111011011010111000001110101011101000110010101110010"
+desAgent = DES()
+desAgent.encription(list(text))
