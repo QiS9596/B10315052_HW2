@@ -11,7 +11,7 @@ class DES:
     LeftClock = [1,1,2,2,2,2,2,2,1,2,2,2,2,2,2,1]
     "48,select 48 digits form the 56 key"
     Compression = [13,16,10,23,0,4,2,27,14,5,20,9,22,18,11,3,25,7,15,6,26,19,12,1,40,51,30,
-                   36,46,54,29,39,50,44,32,47,43,48,38,55,33,52,45,41,49,35,31]
+                   36,46,54,29,39,50,44,32,47,43,48,38,55,33,52,45,41,49,35,28,31]
 
     "expansion list to expand left/right 32digits to 48 digits"
     Expansion = [31,0,1,2,3,4,3,4,5,6,7,8,7,8,9,10,11,12,11,12,13,14,15,16,15,16,17,18,19,20,19,20,21,22,23,24,23,24,
@@ -61,12 +61,13 @@ class DES:
 
 
     DEFAULT_BLOCK_SIZE = 64
+    key = []
 
     def __init__(self):
         DEFUALTKEY = [1, 0, 1, 0, 1, 0, 1, 1]
         self.key = DEFUALTKEY[:]
         for i in range(0,7):
-            self.key.append(DEFUALTKEY)
+            self.key = self.key+DEFUALTKEY
 
     def setKey(self,key):
         if self.setKey(key):
@@ -112,7 +113,7 @@ class DES:
             return
         result = []
         for i in range(text1.__len__()):
-            if text1[i] == text2[i]:
+            if int(text1[i]) == int(text2[i]):
                 result.append(0)
             else:
                 result.append(1)
@@ -123,15 +124,18 @@ class DES:
             return
         result = []
         for i in range(0,8):
-            result.append(self.SubsitutionBox(text[i*6,(i+1)*6]))
+            result= result +(self.PartialSubsitutionBox(text[i*6:(i+1)*6],i))
         return result
 
-    def SubsitutionBox(self,text,index):
+    def PartialSubsitutionBox(self,text,index):
         if text.__len__() != 6:
             return
         result = self.Substitution[index][text[0]*2+text[5]][text[1]*8+text[2]*4+text[3]*2+text[4]]
         resultList = list(bin(result))
-        return resultList[2:resultList.__len__()]
+        shortedResult = resultList[2:resultList.__len__()]
+        while shortedResult.__len__() < 4:
+            shortedResult = [0] + shortedResult
+        return shortedResult
 
     def handle(self,L,R,subkey):
         expanded = self.permutationBox(R,self.Expansion)
@@ -145,20 +149,26 @@ class DES:
             return
         plainText = self.permutationBox(plainText,self.InitialPermutation)
         shortenedKey = self.permutationBox(self.key,self.KeyPermutation)
+        print(shortenedKey)
         for i in range(0,16):
             L = plainText[0:32]
             R = plainText[32:64]
             C = shortenedKey[0:28]
-            D = shortenedKey[28,56]
+            print(C)
+            D = shortenedKey[28:56]
+            print(D)
             C = self.digitMove(C,True,self.LeftClock[i])
             D = self.digitMove(D,True,self.LeftClock[i])
             shortenedKey = C+D
             subkey = self.permutationBox(shortenedKey,self.Compression)
-            print(i)
             plainText  = R+self.handle(L,R,subkey)
 
         return plainText
 
 text = "0110001101101111011011010111000001110101011101000110010101110010"
+temp = []
+for a in text:
+    temp.append(int(a))
 desAgent = DES()
-desAgent.encription(list(text))
+a = desAgent.encription(temp)
+print(a)
