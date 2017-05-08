@@ -9,6 +9,7 @@ class DES:
                       38,30,22,14,6,61,53,45,37,29,21,13,5,60,52,44,36,28,20,12,4,27,19,11,3]
     "length 16, do left move for both left and right part of the permuted key"
     LeftClock = [1,1,2,2,2,2,2,2,1,2,2,2,2,2,2,1]
+    RightClock = [0,1,2,2,2,2,2,2,1,2,2,2,2,2,2,1]
     "48,select 48 digits form the 56 key"
     Compression = [13,16,10,23,0,4,2,27,14,5,20,9,22,18,11,3,25,7,15,6,26,19,12,1,40,51,30,
                    36,46,54,29,39,50,44,32,47,43,48,38,55,33,52,45,41,49,35,28,31]
@@ -62,12 +63,14 @@ class DES:
 
     DEFAULT_BLOCK_SIZE = 64
     key = []
-
     def __init__(self):
         DEFUALTKEY = [1, 0, 1, 0, 1, 0, 1, 1]
         self.key = DEFUALTKEY[:]
         for i in range(0,7):
             self.key = self.key+DEFUALTKEY
+        self.InverseIP = [None]*64
+        for i in range(0,64):
+            self.InverseIP[self.InitialPermutation[i]] = i
 
     def setKey(self,key):
         if self.setKey(key):
@@ -149,26 +152,44 @@ class DES:
             return
         plainText = self.permutationBox(plainText,self.InitialPermutation)
         shortenedKey = self.permutationBox(self.key,self.KeyPermutation)
-        print(shortenedKey)
         for i in range(0,16):
             L = plainText[0:32]
             R = plainText[32:64]
             C = shortenedKey[0:28]
-            print(C)
             D = shortenedKey[28:56]
-            print(D)
             C = self.digitMove(C,True,self.LeftClock[i])
             D = self.digitMove(D,True,self.LeftClock[i])
             shortenedKey = C+D
             subkey = self.permutationBox(shortenedKey,self.Compression)
             plainText  = R+self.handle(L,R,subkey)
 
+        plainText = self.permutationBox(plainText,self.InverseIP)
         return plainText
+
+    def decription(self, ciptherText):
+        if ciptherText.__len__() != 64:
+            return
+        ciptherText = self.permutationBox(ciptherText,self.InitialPermutation)
+        shortenedKey = self.permutationBox(self.key,self.KeyPermutation)
+        for i in range(0,16):
+            L = ciptherText[0:32]
+            R = ciptherText[32:64]
+            C = shortenedKey[0:28]
+            D = shortenedKey[28:56]
+            C = self.digitMove(C,False,self.RightClock[i])
+            D = self.digitMove(D,False,self.RightClock[i])
+            shortenedKey = C+D
+            subkey = self.permutationBox(shortenedKey,self.Compression)
+            ciptherText = R + self.handle(L,R,subkey)
+        ciptherText = self.permutationBox(ciptherText,self.InverseIP)
+        return ciptherText
 
 text = "0110001101101111011011010111000001110101011101000110010101110010"
 temp = []
 for a in text:
     temp.append(int(a))
 desAgent = DES()
+print(temp)
 a = desAgent.encription(temp)
 print(a)
+print(desAgent.decription(a))
