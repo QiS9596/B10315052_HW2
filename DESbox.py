@@ -73,7 +73,7 @@ class DES:
             self.InverseIP[self.InitialPermutation[i]] = i
 
     def setKey(self,key):
-        if self.setKey(key):
+        if self.checkKey(key):
             self.key = key
             return True
         return False
@@ -135,7 +135,10 @@ class DES:
             return
         result = self.Substitution[index][text[0]*2+text[5]][text[1]*8+text[2]*4+text[3]*2+text[4]]
         resultList = list(bin(result))
-        shortedResult = resultList[2:resultList.__len__()]
+        temp = resultList[2:resultList.__len__()]
+        shortedResult = []
+        for a in temp:
+            shortedResult.append(int(a))
         while shortedResult.__len__() < 4:
             shortedResult = [0] + shortedResult
         return shortedResult
@@ -161,7 +164,11 @@ class DES:
             D = self.digitMove(D,True,self.LeftClock[i])
             shortenedKey = C+D
             subkey = self.permutationBox(shortenedKey,self.Compression)
-            plainText  = R+self.handle(L,R,subkey)
+            L = self.handle(L,R,subkey)
+            if(i == 15):
+                plainText = L+R
+            else:
+                plainText = R+L
 
         plainText = self.permutationBox(plainText,self.InverseIP)
         return plainText
@@ -180,7 +187,12 @@ class DES:
             D = self.digitMove(D,False,self.RightClock[i])
             shortenedKey = C+D
             subkey = self.permutationBox(shortenedKey,self.Compression)
-            ciptherText = R + self.handle(L,R,subkey)
+            L = self.handle(L,R,subkey)
+            if i == 15:
+                ciptherText = L+R
+            else:
+                ciptherText = R+L
+
         ciptherText = self.permutationBox(ciptherText,self.InverseIP)
         return ciptherText
 
@@ -189,7 +201,15 @@ temp = []
 for a in text:
     temp.append(int(a))
 desAgent = DES()
-print(temp)
+desAgent.setKey([0,1,1,1,0,0,0,0,
+                 0,0,1,1,1,0,0,0,
+                 1,0,0,1,1,0,1,1,
+                 1,1,1,0,1,1,0,0,
+                 0,1,1,1,0,1,1,0,
+                 1,0,0,1,0,0,1,0,
+                 1,0,0,0,0,1,0,1,
+                 1,1,0,1,1,0,1,0])
 a = desAgent.encription(temp)
 print(a)
+print(text)
 print(desAgent.decription(a))
