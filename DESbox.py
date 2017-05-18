@@ -196,6 +196,8 @@ class DES:
         ciptherText = self.permutationBox(ciptherText,self.InverseIP)
         return ciptherText
 
+
+"""
 text = "0110001101101111011011010111000001110101011101000110010101110010"
 temp = []
 for a in text:
@@ -213,3 +215,4 @@ a = desAgent.encription(temp)
 print(a)
 print(text)
 print(desAgent.decription(a))
+"""
