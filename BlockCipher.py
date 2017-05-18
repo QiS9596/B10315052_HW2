@@ -5,6 +5,7 @@ class BlockCipherAgent:
     ECB_MODE = 0
     CBC_MODE = 1
     OFB_MODE = 2
+    CTR_MODE = 3
     DESAgent = DESbox.DES()
 
     def __init__(self, defaultMode = ECB_MODE):
@@ -36,6 +37,8 @@ class BlockCipherAgent:
             return self.CBCEncryption()
         if self.mode == self.OFB_MODE:
             return self.OFBEncryption()
+        if self.mode == self.CTR_MODE:
+            return self.CTREncryption()
 
     def ECBEncryption(self):
         result = [None]*self.unhandledList.__len__()
@@ -60,6 +63,18 @@ class BlockCipherAgent:
             result[i] = self.DESAgent.XOR(a,self.unhandledList[i])
         return result
 
+    def CTREncryption(self):
+        result = []
+        result.append(self.IV)
+        for i in range(1,self.unhandledList.__len__()):
+            result.append(self.binary_add1(result[i-1]))
+            result[i-1] = self.DESAgent.encription(result[i-1])
+            result[i-1] = self.DESAgent.XOR(result[i-1],self.unhandledList[i-1])
+        end = self.unhandledList.__len__()-1
+        result[end] = self.DESAgent.encription(result[end])
+        result[end] = self.DESAgent.XOR(result[end], self.unhandledList[end])
+        return result
+
     def decryption(self):
         if self.mode == self.ECB_MODE:
             return self.ECBDecryption()
@@ -67,6 +82,9 @@ class BlockCipherAgent:
             return self.CBCDecryption()
         if self.mode == self.OFB_MODE:
             return self.OFBDecryption()
+        if self.mode == self.CTR_MODE:
+            return self.CTRDecryption()
+
 
 
     def ECBDecryption(self):
@@ -87,8 +105,25 @@ class BlockCipherAgent:
     def OFBDecryption(self):
         return self.OFBEncryption()
 
+    def CTRDecryption(self):
+        return self.CTREncryption()
+
+    def binary_add1(self, origin):
+        carry = 1
+        result = [None]*origin.__len__()
+        for i in range(origin.__len__()-1,-1,-1):
+            if carry == 1 and origin[i] == 1:
+                result[i] = 0
+                carry = 1
+            elif carry == 1 and origin[i] == 0:
+                result[i] = 1
+                carry = 0
+            else:
+                result[i] = origin[i]
+        return result
+
 a = BlockCipherAgent()
-a.setMode(a.OFB_MODE)
+a.setMode(a.CTR_MODE)
 c = [[1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0]]
 print(c*2)
 a.setInput(c*2)
