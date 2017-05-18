@@ -4,6 +4,7 @@ class BlockCipherAgent:
 
     ECB_MODE = 0
     CBC_MODE = 1
+    OFB_MODE = 2
     DESAgent = DESbox.DES()
 
     def __init__(self, defaultMode = ECB_MODE):
@@ -33,6 +34,8 @@ class BlockCipherAgent:
             return self.ECBEncryption()
         if self.mode == self.CBC_MODE:
             return self.CBCEncryption()
+        if self.mode == self.OFB_MODE:
+            return self.OFBEncryption()
 
     def ECBEncryption(self):
         result = [None]*self.unhandledList.__len__()
@@ -49,11 +52,22 @@ class BlockCipherAgent:
             result[i] = self.DESAgent.encription(temp)
         return result
 
+    def OFBEncryption(self):
+        result = [None]*self.unhandledList.__len__()
+        a = self.IV
+        for i in range(0,self.unhandledList.__len__()):
+            a = self.DESAgent.encription(a)
+            result[i] = self.DESAgent.XOR(a,self.unhandledList[i])
+        return result
+
     def decryption(self):
         if self.mode == self.ECB_MODE:
             return self.ECBDecryption()
         if self.mode == self.CBC_MODE:
             return self.CBCDecryption()
+        if self.mode == self.OFB_MODE:
+            return self.OFBDecryption()
+
 
     def ECBDecryption(self):
         result = [None]*self.unhandledList.__len__()
@@ -70,8 +84,11 @@ class BlockCipherAgent:
             result[i] = self.DESAgent.XOR(temp, self.unhandledList[i-1])
         return result
 
+    def OFBDecryption(self):
+        return self.OFBEncryption()
+
 a = BlockCipherAgent()
-a.setMode(a.CBC_MODE)
+a.setMode(a.OFB_MODE)
 c = [[1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0]]
 print(c*2)
 a.setInput(c*2)
