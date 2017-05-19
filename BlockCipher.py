@@ -42,15 +42,19 @@ class BlockCipherAgent:
 
     def ECBEncryption(self):
         result = [None]*self.unhandledList.__len__()
+        print(self.unhandledList.__len__())
         for a in range(0, self.unhandledList.__len__()):
+            print(a)
             result[a] = self.DESAgent.encription(self.unhandledList[a])
         return result
 
     def CBCEncryption(self):
         result = [None]*self.unhandledList.__len__()
+        print(self.unhandledList.__len__())
         temp = self.DESAgent.XOR(self.IV, self.unhandledList[0])
         result[0] = self.DESAgent.encription(temp)
         for i in range(1,self.unhandledList.__len__()):
+            print(i)
             temp = self.DESAgent.XOR(result[i-1],self.unhandledList[i])
             result[i] = self.DESAgent.encription(temp)
         return result
@@ -59,6 +63,7 @@ class BlockCipherAgent:
         result = [None]*self.unhandledList.__len__()
         a = self.IV
         for i in range(0,self.unhandledList.__len__()):
+            print(i)
             a = self.DESAgent.encription(a)
             result[i] = self.DESAgent.XOR(a,self.unhandledList[i])
         return result
@@ -67,6 +72,7 @@ class BlockCipherAgent:
         result = []
         result.append(self.IV)
         for i in range(1,self.unhandledList.__len__()):
+            print(i)
             result.append(self.binary_add1(result[i-1]))
             result[i-1] = self.DESAgent.encription(result[i-1])
             result[i-1] = self.DESAgent.XOR(result[i-1],self.unhandledList[i-1])
@@ -90,6 +96,7 @@ class BlockCipherAgent:
     def ECBDecryption(self):
         result = [None]*self.unhandledList.__len__()
         for a in range(0, self.unhandledList.__len__()):
+            print(a)
             result[a] = self.DESAgent.decription(self.unhandledList[a])
         return result
 
@@ -98,6 +105,7 @@ class BlockCipherAgent:
         temp = self.DESAgent.decription(self.unhandledList[0])
         result[0] = self.DESAgent.XOR(self.IV,temp)
         for i in range(1, self.unhandledList.__len__()):
+            print(i)
             temp = self.DESAgent.decription(self.unhandledList[i])
             result[i] = self.DESAgent.XOR(temp, self.unhandledList[i-1])
         return result
@@ -122,12 +130,3 @@ class BlockCipherAgent:
                 result[i] = origin[i]
         return result
 
-a = BlockCipherAgent()
-a.setMode(a.CTR_MODE)
-c = [[1, 1, 0, 1, 0, 1, 0, 1, 1, 1, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 0, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 0, 1, 0, 1, 1, 1, 0, 1, 1, 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 1, 1, 1, 0, 1, 0, 0]]
-print(c*2)
-a.setInput(c*2)
-b = a.encryption()
-print(b)
-a.setInput(b)
-print(a.decryption())
