@@ -92,15 +92,56 @@ class imageReader:
 from BlockCipher import BlockCipherAgent
 ir = imageReader()
 bca = BlockCipherAgent()
-
+def saveNewImage(a,name):
+    tm = Image.new('RGB',(512,512))
+    tm.putdata(a)
+    tm.save(name)
+"""
 a = ir.openImgAndGetData()
 a = ir.handleEntireImage()
 
 bca.setInput(a)
+bca.setMode(bca.CBC_MODE)
 a = bca.encryption()
+bca.setMode(bca.OFB_MODE)
+b = bca.encryption()
+bca.setMode(bca.CTR_MODE)
+c = bca.encryption()
 
-a = ir.handleEntireImage(a)
-tm = Image.new('RGB',(512,512))
-tm.putdata(a)
-tm.show()
-tm.save('result1.bmp')
+a = ir.handleEntireListToEntireImage(a)
+b = ir.handleEntireListToEntireImage(b)
+c = ir.handleEntireListToEntireImage(c)
+
+
+
+saveNewImage(a,'result2.bmp')
+saveNewImage(b,'result3.bmp')
+saveNewImage(c,'result4.bmp')"""
+def rgbhanleImage(outputname,mode,name = 'test.bmp'):
+    a = ir.openImgAndGetData(name)
+    r = ir.getChannelToList(ir.R)
+    g = ir.getChannelToList(ir.G)
+    b = ir.getChannelToList(ir.B)
+    r = ir.listToBinaryList(r)
+    g = ir.listToBinaryList(g)
+    b = ir.listToBinaryList(b)
+    r = ir.padding(r)
+    g = ir.padding(g)
+    b = ir.padding(b)
+    bca.setInput(r)
+    bca.setMode(mode)
+    r = bca.encryption()
+    bca.setInput(g)
+    g = bca.encryption()
+    bca.setInput(b)
+    b = bca.encryption()
+    r = ir.unpadding(r)
+    g = ir.unpadding(g)
+    b = ir.unpadding(b)
+    r = ir.binaryListToList(r)
+    g = ir.binaryListToList(g)
+    b = ir.binaryListToList(b)
+    saveNewImage(ir.listRGBToData(r,g,b),outputname)
+
+rgbhanleImage("result7.bmp",bca.OFB_MODE)
+rgbhanleImage("result8.bmp",bca.CTR_MODE)
